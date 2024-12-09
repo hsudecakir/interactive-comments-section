@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://kit.fontawesome.com/3ed2e8cef0.js" crossorigin="anonymous"></script>
+  <title>Comments Section</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/script.js" defer></script>
+</head>
+<body>
+  <div class="container">
+    <div class="comment-container">
+      <div class="comment" data-username="${comment.user.username}" data-id="${comment.id}>
+        <div class="score">
+          <i class="fa-solid fa-plus"></i>
+          <p>${comment.score}</p>
+          <i class="fa-solid fa-minus"></i>
+        </div>
+        <div class="comment__wrapper">
+          <div class="comment__wrapper--top">
+            <div class="user-info">
+              <img src="assets${comment.user.image.svg}" alt="Profile Picture">
+              <p class="username">${comment.user.username}</p>
+              <span>you</span>
+              <p class="created-at">${comment.createdAt}</p>
+            </div>
+            <div class="btns">
+              <div class="reply-btn" data-id="${comment.id}">
+                <i class="fa-solid fa-reply"></i>
+                <p>Reply</p>
+              </div>
+              <div class="delete-btn" data-id="${comment.id}">
+                <i class="fa-solid fa-trash"></i>
+                <p>Delete</p>
+              </div>
+              <div class="edit-btn" data-id="${comment.id}">
+                <i class="fa-solid fa-pen"></i>
+                <p>Edit</p>
+              </div>
+            </div>
+          </div>
+          <p class="content">${comment.content}</p>
+          ${currentUser == comment.user.username ? '<textarea class="editTextarea"></textarea><div class="update-btn-container"><button class="update-btn">UPDATE</button></div>' : ''}
+        </div>
+      </div>
+      ${"replies" in comment && comment.replies.length > 0 ? `<div class="reply-container" data-id="${comment.id}"></div>` : ''}
+    </div>
+  </div>
+</body>
+</html>
