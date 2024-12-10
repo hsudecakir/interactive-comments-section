@@ -72,7 +72,7 @@ table {
   padding: 24px;
   border-radius: 8px;
   display: flex;
-  align-items: center;
+  align-items: start;
   gap: 24px;
   margin-bottom: 20px;
 }
@@ -150,6 +150,14 @@ table {
   align-items: center;
   gap: 8px;
   cursor: pointer;
+  border: none;
+  outline: none;
+  background-color: transparent;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  color: var(--moderate-blue);
+  padding: 0;
 }
 
 .reply-btn i, .delete-btn i, .edit-btn i{
@@ -157,14 +165,7 @@ table {
   color: var(--moderate-blue);
 }
 
-.reply-btn p, .delete-btn p, .edit-btn p{
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 24px;
-  color: var(--moderate-blue);
-}
-
-.delete-btn i, .delete-btn p{
+.delete-btn i, .delete-btn{
   color: var(--soft-red);
 }
 
@@ -244,7 +245,7 @@ table {
   color: var(--dark-blue);
 }
 
-.add-comment button, .update-btn{
+.add-comment button, .update-btn, .new-reply-btn{
   padding: 12px 30px;
   max-height: 48px;
   background-color: var(--moderate-blue);
@@ -258,7 +259,7 @@ table {
   cursor: pointer;
 }
 
-.editTextarea{
+.editTextarea, .reply-textarea{
   display: none;
   min-height: 96px;
   width: 100%;
@@ -300,4 +301,7 @@ table {
   color: var(--moderate-blue);
 }
 
+.reply-textarea{
+  display: block;
+}
 
