@@ -6,17 +6,18 @@ let currentUser;
 async function init() {
   const data = await fetch('assets/json/data.json').then(res => res.json());
   currentUser = data.currentUser;
-  console.log(JSON.parse(localStorage.getItem('comments')));
-  if(JSON.parse(localStorage.getItem('comments')).length !== 0){
-    data = JSON.parse(localStorage.getItem('comments'));
+  if(JSON.parse(localStorage.getItem('comments')) !== null){
+    comments = JSON.parse(localStorage.getItem('comments'));
     replies = JSON.parse(localStorage.getItem('replies'));
-  }
-  render(data, currentUser);
-  for (const comment of data.comments) {
-    comments.push(comment);
-    for (const reply of comment.replies) {
-      replies.push(reply);
+    render(comments, currentUser)
+  } else{
+    for (const comment of data.comments) {
+      comments.push(comment);
+      for (const reply of comment.replies) {
+        replies.push(reply);
+      }
     }
+    render(data.comments, currentUser);
   }
   addCurrentUserClass(currentUser);
 }
@@ -27,13 +28,20 @@ function render(commentDatas, currentUser){
   container.innerHTML = `
     <div class="comments"></div>
     <div class="add-comment">
-      <img src="assets/images/juliusomo.svg" alt="Profile Picture">
+      <img class="desktop--image" src="assets${currentUser.image.svg}" alt="Profile Picture">
       <textarea id="addCommentTextarea" placeholder="Add a comment…"></textarea>
-      <button id="sendBtn">SEND</button>
+      <button class="desktop--button send-btn">SEND</button>
+      <div class="add-comment--mobile">
+        <img src="assets${currentUser.image.svg}" alt="Profile Picture">
+        <button class="send-btn">SEND</button>
+      </div>
     </div>
   `;
-  renderComments(commentDatas.comments, currentUser);
-  sendBtn.addEventListener('click', (e) => addComment(e, commentDatas));
+  renderComments(commentDatas, currentUser);
+  const sendBtns = document.querySelectorAll('.send-btn');
+  for (const sendBtn of sendBtns) {
+    sendBtn.addEventListener('click', (e) => addComment(e, commentDatas, currentUser));
+  }
 }
 
 function renderComments(commentDatas, currentUser){
@@ -70,6 +78,24 @@ function renderComments(commentDatas, currentUser){
             </div>
             <p class="content">${comment.content}</p>
             ${currentUser.username == comment.user.username ? `<textarea class="editTextarea"></textarea><div class="update-btn-container"><button class="update-btn" data-id="${comment.id}">UPDATE</button></div>` : ''}
+          </div>
+          <div class="comment--mobile--bottom">
+            <div class="score">
+              <i class="fa-solid fa-plus"></i>
+              <p>${comment.score}</p>
+              <i class="fa-solid fa-minus"></i>
+            </div>
+            <div class="btns">
+              <button class="reply-btn" data-id="${comment.id}">
+                <i class="fa-solid fa-reply"></i> Reply
+              </button>
+              <button class="delete-btn" data-id="${comment.id}">
+                <i class="fa-solid fa-trash"></i> Delete
+              </button>
+              <button class="edit-btn" data-id="${comment.id}">
+                <i class="fa-solid fa-pen"></i> Edit
+              </button>
+            </div>
           </div>
         </div>
         <div class="reply-container" data-id="${comment.id}"></div>
@@ -122,6 +148,24 @@ function renderReplies(commentDatas, currentUser){
             ${repliedComment.content}
           </p>
             ${currentUser.username == repliedComment.user.username ? `<textarea class="editTextarea"></textarea><div class="update-btn-container"><button class="update-btn" data-id="${repliedComment.id}">UPDATE</button></div>` : ''}
+            <div class="comment--mobile--bottom">
+              <div class="score">
+                <i class="fa-solid fa-plus"></i>
+                <p>${repliedComment.score}</p>
+                <i class="fa-solid fa-minus"></i>
+              </div>
+              <div class="btns">
+                <button class="reply-btn" data-id="${repliedComment.id}">
+                  <i class="fa-solid fa-reply"></i> Reply
+                </button>
+                <button class="delete-btn" data-id="${repliedComment.id}">
+                  <i class="fa-solid fa-trash"></i> Delete
+                </button>
+                <button class="edit-btn" data-id="${repliedComment.id}">
+                  <i class="fa-solid fa-pen"></i> Edit
+                </button>
+              </div>
+            </div>
         </div>
       </div>
       <div class="reply-container" data-id="${repliedComment.id}"></div>
@@ -146,13 +190,12 @@ function addCurrentUserClass(currentUser){
   }
 }
 
-function addComment(e, commentDatas){
+function addComment(e, commentDatas, currentUser){
   for (const comment of comments) {
     for (const reply of comment.replies) {
       replies.push(reply);
     }
   }
-  console.log(replies)
   const lastComment = comments[comments.length - 1];
   const lastReply = replies[replies.length - 1];
   if(addCommentTextarea.value.trim() !== ''){
@@ -164,11 +207,11 @@ function addComment(e, commentDatas){
         score: 0,
         user: {
           image: {
-            png: `/images/${commentDatas.currentUser.username}.png`,
-            svg: `/images/${commentDatas.currentUser.username}.svg`,
-            webp: `/images/${commentDatas.currentUser.username}.webp`
+            png: `/images/${currentUser.username}.png`,
+            svg: `/images/${currentUser.username}.svg`,
+            webp: `/images/${currentUser.username}.webp`
           },
-          username: `${commentDatas.currentUser.username}`,
+          username: `${currentUser.username}`,
         },
         replies: []
       }
@@ -200,22 +243,29 @@ function bindReplyBtns(commentDatas, currentUser){
 }
 
 function deleteComment(){
-  const selectedComment = comments.findIndex(x => x.id == this.dataset.id);
-  if(selectedComment !== -1){
-    comments.splice(selectedComment, 1);
-  }
-  const selectedReply = replies.findIndex(x => x.id == this.dataset.id);
-  if(selectedReply !== -1){
-    for (const comment of comments) {
-      const parentComment = comment.replies.find(x => x.id == this.dataset.id);
-        if(parentComment){
-          comment.replies.splice(selectedReply, 1);
-        }
+  deleteCommentModal.showModal();
+  deleteCommentBtn.addEventListener('click', () => {
+    deleteCommentModal.close();
+    const selectedComment = comments.findIndex(x => x.id == this.dataset.id);
+    if(selectedComment !== -1){
+      comments.splice(selectedComment, 1);
     }
-    replies.splice(selectedReply, 1);
-
-  }
-  renderComments(comments, currentUser);
+    const selectedReply = replies.findIndex(x => x.id == this.dataset.id);
+    if(selectedReply !== -1){
+      for (const comment of comments) {
+        const parentComment = comment.replies.findIndex(x => x.id == this.dataset.id);
+          if(parentComment !== -1){
+            comment.replies.splice(parentComment, 1);
+          }
+      }
+      replies.splice(selectedReply, 1);
+  
+    }
+    renderComments(comments, currentUser);
+  });
+  cancel.addEventListener('click', () => {
+    deleteCommentModal.close();
+  })
 }
 
 function editComment(e, commentDatas){
@@ -265,6 +315,7 @@ function replyComment(e, commentDatas){
   `
   const sendReplyBtn = document.querySelector(`.new-reply-btn[data-id="${repliedCommentId.id}"]`);
   const sendReplyTextarea = document.querySelector(`.reply-textarea[data-id="${repliedCommentId.id}"]`);
+  sendReplyTextarea.focus();
   sendReplyBtn.addEventListener('click', () => {
     const lastComment = comments[comments.length - 1];
     const lastReply = replies[replies.length - 1];
@@ -283,8 +334,6 @@ function replyComment(e, commentDatas){
         username: `${currentUser.username}`
       }
     }
-    // repliedCommentId.replies.push(newReply);
-    // replies.push(newReply);
     for (const comment of commentDatas) {
       if(comment.id === repliedCommentId.id){
         repliedCommentId.replies.push(newReply);
